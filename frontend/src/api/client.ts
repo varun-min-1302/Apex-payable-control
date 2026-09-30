@@ -35,13 +35,23 @@ import {
 } from '../types';
 
 
-const BASE_URL = '/api/v1';
-
+const API_ORIGIN = import.meta.env.VITE_API_URL
+  ? String(import.meta.env.VITE_API_URL).replace(/\/+$/, '')
+  : '';
+const BASE_URL = `${API_ORIGIN}/api/v1`;
 
 class ApiClient {
+  private activeUserEmail: string = 'ananya.rao@apexfin.in'; // Default to Finance Manager
 
-  private activeUserEmail: string = 'ananya.rao@apexfin.in';
- // Default to Finance Manager
+  async checkHealth(): Promise<{ status: string; database?: string }> {
+    const url = API_ORIGIN ? `${API_ORIGIN}/health` : '/health';
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error(`Health check returned ${res.status}`);
+    }
+    return res.json();
+  }
+
 
   constructor() {
 

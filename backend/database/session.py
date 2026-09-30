@@ -8,8 +8,14 @@ DEFAULT_DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql+psycopg2://postgres@localhost:5432/ap_control",
 )
+# Normalize connection strings from Render / Supabase / Heroku
+if DEFAULT_DATABASE_URL.startswith("postgres://"):
+    DEFAULT_DATABASE_URL = DEFAULT_DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
+elif DEFAULT_DATABASE_URL.startswith("postgresql://") and not DEFAULT_DATABASE_URL.startswith("postgresql+"):
+    DEFAULT_DATABASE_URL = DEFAULT_DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 engine = create_engine(
+
     DEFAULT_DATABASE_URL,
     echo=os.getenv("SQL_ECHO", "false").lower() == "true",
     pool_size=10,

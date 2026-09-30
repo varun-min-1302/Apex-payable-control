@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: apex-payables-backend
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: DATABASE_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: "gemini-2.5-flash"
+      - key: EXTRACTION_PROVIDER
+        value: "gemini"
+      - key: STORAGE_ROOT_DIR
+        value: "/tmp/storage"
+      - key: ALLOWED_ORIGINS
+        sync: false

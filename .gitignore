@@ -16,9 +16,9 @@ htmlcov/
 .env.*
 !.env.example
 
-# Local Storage (Phase 5A Invoices & Documents)
-backend/storage/
-storage/
+# Local Storage runtime data (Invoices & Documents)
+/backend/storage/
+/storage/
 
 # Node & Frontend
 node_modules/

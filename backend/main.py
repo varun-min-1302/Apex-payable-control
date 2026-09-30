@@ -21,14 +21,29 @@ app = FastAPI(
     openapi_url="/openapi.json"
 )
 
-# Enable CORS for local Vite/React frontend and cross-origin access
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+import os
+
+# Enable CORS for local Vite/React frontend, Vercel deployments, and production origins
+allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "")
+if allowed_origins_raw.strip():
+    allowed_origins = [o.strip() for o in allowed_origins_raw.split(",") if o.strip()]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    # Development & preview deployments: allow localhost and all vercel.app preview URLs
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|.*\.vercel\.app)(:\d+)?",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
 
 @app.middleware("http")
 async def add_process_time_and_correlation_headers(request: Request, call_next):

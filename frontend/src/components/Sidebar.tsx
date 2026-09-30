@@ -103,8 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           { id: '7', email: 'rajesh.sharma@apexfin.in', full_name: 'Rajesh Sharma', roles: ['ADMIN'] },
         ]);
       });
-    fetch('/health')
-      .then(res => res.json())
+    api.checkHealth()
       .then(data => setBackendHealthy(data.status === 'HEALTHY'))
       .catch(() => setBackendHealthy(false));
   }, []);

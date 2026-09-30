@@ -89,45 +89,66 @@ def test_golden_transaction_approval_creates_payable(client):
     inv_id = str(inv.id)
     session.close()
 
-    # Finance Manager approves
-    response = client.post(
-        f"/api/v1/approvals/{appr_id}/decide",
-        json={"decision": "APPROVE", "comments": "3-way match verified. Approved for disbursement."},
-        headers={"X-Demo-User-Email": "ananya.rao@apexfin.in"}  # Finance Manager
-    )
-    assert response.status_code == 200
-    data = response.json()
-    assert data["decision"] == "APPROVE"
-    assert data["payable_created"] is True
-    assert data["payable_number"] is not None
-    assert data["invoice_status"] == "PAYABLE_CREATED"
+    payable_id = None
+    try:
+        # Finance Manager approves
+        response = client.post(
+            f"/api/v1/approvals/{appr_id}/decide",
+            json={"decision": "APPROVE", "comments": "3-way match verified. Approved for disbursement."},
+            headers={"X-Demo-User-Email": "ananya.rao@apexfin.in"}  # Finance Manager
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["decision"] == "APPROVE"
+        assert data["payable_created"] is True
+        assert data["payable_number"] is not None
+        assert data["invoice_status"] == "PAYABLE_CREATED"
 
-    # Verify via Payables API
-    payable_id = data["payable_id"]
-    pay_res = client.get(f"/api/v1/payables/{payable_id}")
-    assert pay_res.status_code == 200
-    pay_data = pay_res.json()
-    assert pay_data["status"] == "OPEN"
-    assert float(pay_data["approved_amount"]) > 0
-    assert float(pay_data["remaining_balance"]) > 0
+        # Verify via Payables API
+        payable_id = data["payable_id"]
+        pay_res = client.get(f"/api/v1/payables/{payable_id}")
+        assert pay_res.status_code == 200
+        pay_data = pay_res.json()
+        assert pay_data["status"] == "OPEN"
+        assert float(pay_data["approved_amount"]) > 0
+        assert float(pay_data["remaining_balance"]) > 0
 
-    # Record partial disbursement
-    pay_ref = f"NEFT-TEST-{uuid.uuid4().hex[:8].upper()}"
-    disburse_res = client.post(
-        f"/api/v1/payables/{payable_id}/payments",
-        json={
-            "amount": 10000.00,
-            "payment_reference": pay_ref,
-            "payment_method": "NEFT"
-        },
-        headers={"X-Demo-User-Email": "ananya.rao@apexfin.in"}
-    )
-    assert disburse_res.status_code == 201
-    disb_data = disburse_res.json()
-    assert float(disb_data["amount"]) == 10000.00
-    assert disb_data["payment_reference"] == pay_ref
+        # Record partial disbursement
+        pay_ref = f"NEFT-TEST-{uuid.uuid4().hex[:8].upper()}"
+        disburse_res = client.post(
+            f"/api/v1/payables/{payable_id}/payments",
+            json={
+                "amount": 10000.00,
+                "payment_reference": pay_ref,
+                "payment_method": "NEFT"
+            },
+            headers={"X-Demo-User-Email": "ananya.rao@apexfin.in"}
+        )
+        assert disburse_res.status_code == 201
+        disb_data = disburse_res.json()
+        assert float(disb_data["amount"]) == 10000.00
+        assert disb_data["payment_reference"] == pay_ref
 
-    # Check updated payable status is PARTIALLY_PAID
-    updated_pay = client.get(f"/api/v1/payables/{payable_id}").json()
-    assert updated_pay["status"] == "PARTIALLY_PAID"
-    assert float(updated_pay["paid_amount"]) == 10000.00
+        # Check updated payable status is PARTIALLY_PAID
+        updated_pay = client.get(f"/api/v1/payables/{payable_id}").json()
+        assert updated_pay["status"] == "PARTIALLY_PAID"
+        assert float(updated_pay["paid_amount"]) == 10000.00
+    finally:
+        clean_session = SessionLocal()
+        try:
+            clean_inv = clean_session.query(Invoice).filter(Invoice.id == inv_id).first()
+            if clean_inv:
+                if payable_id:
+                    clean_session.query(Payment).filter(Payment.payable_id == payable_id).delete(synchronize_session=False)
+                    clean_session.query(PayableLedger).filter(PayableLedger.id == payable_id).delete(synchronize_session=False)
+                clean_session.query(Approval).filter(Approval.invoice_id == inv_id).delete(synchronize_session=False)
+                clean_inv.current_revision_id = None
+                clean_session.flush()
+                clean_session.query(InvoiceRevision).filter(InvoiceRevision.invoice_id == inv_id).delete(synchronize_session=False)
+                clean_session.delete(clean_inv)
+                clean_session.commit()
+        except Exception:
+            clean_session.rollback()
+        finally:
+            clean_session.close()
+

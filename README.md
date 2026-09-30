@@ -20,22 +20,21 @@ The system answers unambiguously with **YES**, **NO**, or **WAITING FOR APPROVAL
 
 ---
 
-## 🏛️ Platform Architecture & Engineering Stack
+## 🏛️ Platform Architecture & Technology Stack
 
-The system is built across four enterprise layers:
-
-| Layer | Technology | Key Deliverables & Capabilities |
+| Layer | Technology | Key Capabilities & Deliverables |
 | :--- | :--- | :--- |
-| **Phase 1: Database Foundation** | PostgreSQL 16+, Alembic, pgvector | Multi-tenant schema (`identity`, `procurement`, `ap`, `audit`), 22 relational tables, strict `NUMERIC(18,2)` financial types, and immutable append-only triggers. |
-| **Phase 2: Deterministic Control Engine** | Python 3.12, SQLAlchemy 2 | 18 explainable controls across Vendor, PO, Receipt, Financials, Duplicates, and Risk Signals. Single-query context builder. |
-| **Phase 3: Enterprise REST API** | FastAPI, Pydantic v2, Uvicorn | 25+ REST endpoints (`/api/v1`), OpenAPI Swagger docs, JWT bearer auth with Finathon demo role emulation, **The Golden Transaction**. |
-| **Phase 4: Fintech SaaS Cockpit** | React 19, TypeScript, Vite, Tailwind CSS | Polished fintech SaaS interface, left navigation sidebar, 7 Finathon persona switcher, 3-Way Match inspector, exception resolution, approval sign-off, general liability ledger. |
+| **Frontend** | React 19, TypeScript, Vite, Tailwind CSS | Polished fintech SaaS interface, left navigation sidebar, 7 Finathon persona switcher, 3-Way Match inspector, exception resolution, approval sign-off, general liability ledger. |
+| **Backend** | Python 3.11+, FastAPI, Uvicorn, SQLAlchemy 2 | 25+ REST endpoints (`/api/v1`), OpenAPI Swagger docs, JWT bearer auth with Finathon demo role emulation, **The Golden Transaction**. |
+| **Database** | PostgreSQL 16+ (Supabase / Local), Alembic, pgvector | Multi-tenant schema (`identity`, `procurement`, `ap`, `audit`), 22 relational tables, strict `NUMERIC(18,2)` financial types, and immutable append-only triggers. |
+| **AI Extraction** | Google Gemini API (`google-genai` SDK) | Multimodal invoice parsing (PDF & images), structured Pydantic extraction with fallback to deterministic mock provider. |
+| **Deployment** | Vercel (Frontend) + Render (Backend) + Supabase (Database) | Serverless frontend SPA hosting with global CDN, containerized Python web service, and managed cloud PostgreSQL. |
 
 ---
 
 ## 🎨 Frontend Design & Visual Language
 
-- **Left Navigation Sidebar**: Clean, structured access to all operational views (`Overview`, `Invoices`, `Needs Attention`, `Approvals`, `Payments`, `Vendors & Orders`), testing tools (`Control Simulator`, `Finathon Scenarios`, `Audit Activity`), system health indicator (`● Operational`), Theme switcher (Light/Dark), and active Persona Switcher.
+- **Navigation Sidebar**: Clean, structured access to all operational views (`Overview`, `Invoices`, `Needs Attention`, `Approvals`, `Payments`, `Vendors & Orders`), testing tools (`Control Simulator`, `Finathon Scenarios`, `Audit Activity`), system health indicator (`● System operational`), Theme switcher (Light/Dark), and active Persona Switcher.
 - **Accounts Payable Control Center (Home)**:
   - **Total Payable Liability** balance card with trend throughput and quick ledger actions.
   - **Needs Attention** and **Awaiting Sign-off** triage metrics with direct queue access.
@@ -90,35 +89,129 @@ The system includes 15 deliberate seed scenarios accessible under **Finathon Sce
 
 ---
 
-## 🚀 Running Locally
+## 🚀 Local Development Quickstart
 
 ### Prerequisites
-- Python 3.12+
+- Python 3.11+
 - Node.js 18+ & npm
-- PostgreSQL 16+
+- PostgreSQL 16+ (or remote Supabase connection)
 
-### 1. Start PostgreSQL 16
-```powershell
-& "D:\pgsql16\pgsql\bin\postgres.exe" -D "d:\pgsql16\data"
+### 1. Backend Setup
+```bash
+# Clone the repository
+git clone https://github.com/varun-min-1302/Apex-payable-control.git
+cd Apex-payable-control
+
+# Create virtual environment & install dependencies
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# Linux/macOS:
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+# Copy environment template
+cp .env.example .env
+# Edit .env with your local PostgreSQL or Supabase credentials
 ```
 
-### 2. Start FastAPI Backend (Port 8000)
-```powershell
-$env:PYTHONPATH="d:\Projects\PA control"
-python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
+### 2. Run Database Migrations & Seed Demo Data
+```bash
+# Apply Alembic schema migrations (22 tables)
+alembic -c backend/alembic.ini upgrade head
+
+# Seed 7 demo personas and 15 benchmark scenarios
+python -m scripts.seed_demo_data
+python -m scripts.seed_finathon_scenarios
 ```
 
-### 3. Start Vite Frontend (Port 5173)
-```powershell
+### 3. Start Backend Server
+```bash
+python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+```
+- API Health Check: [http://localhost:8000/health](http://localhost:8000/health)
+- Interactive Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### 4. Start Frontend
+```bash
 cd frontend
+npm install
 npm run dev
+```
+- Application UI: [http://localhost:5173](http://localhost:5173)
+
+---
+
+## ☁️ Cloud Deployment Guide (Supabase + Render + Vercel)
+
+### Step 1: Database Setup (Supabase PostgreSQL)
+1. Create a project at [supabase.com](https://supabase.com).
+2. Under **Project Settings -> Database**, copy the **URI** connection string (select **Session pooler** or **Direct connection** with `sslmode=require`).
+3. Set your connection string in your backend environment:
+   ```env
+   DATABASE_URL=postgresql+psycopg2://postgres.[REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require
+   ```
+4. Run migrations from your local terminal against Supabase:
+   ```bash
+   alembic -c backend/alembic.ini upgrade head
+   python -m scripts.seed_demo_data
+   python -m scripts.seed_finathon_scenarios
+   ```
+
+### Step 2: Backend Deployment (Render)
+1. Create a new **Web Service** on [render.com](https://render.com) connected to your GitHub repository.
+2. Select **Python 3** runtime with the following configuration:
+   - **Root Directory:** *(leave blank)*
+   - **Build Command:** `pip install -r requirements.txt`
+   - **Start Command:** `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
+3. Configure Environment Variables in Render:
+   - `DATABASE_URL`: Your Supabase connection string.
+   - `GEMINI_API_KEY`: Your Gemini API key from AI Studio.
+   - `GEMINI_MODEL`: `gemini-2.5-flash`
+   - `EXTRACTION_PROVIDER`: `gemini` (or `mock`)
+   - `STORAGE_ROOT_DIR`: `/tmp/storage`
+   - `ALLOWED_ORIGINS`: `https://your-frontend.vercel.app` (or leave empty to allow all Vercel preview domains).
+4. Deploy and verify health at: `https://[your-service].onrender.com/health`
+
+*(A preconfigured `render.yaml` Blueprint is provided in the repository for 1-click Render deployment).*
+
+### Step 3: Frontend Deployment (Vercel)
+1. Import the repository on [vercel.com](https://vercel.com).
+2. Configure Project Settings:
+   - **Framework Preset:** Vite
+   - **Root Directory:** `frontend`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+3. Add Environment Variable:
+   - `VITE_API_URL`: `https://[your-service].onrender.com` (no trailing slash)
+4. Deploy! The included `frontend/vercel.json` automatically configures SPA client-side routing.
+
+---
+
+## 🧪 Verification & Automated Testing
+
+Run the full automated test suite (186 unit, integration, and scenario tests):
+
+```bash
+# Run backend pytest suite
+python -m pytest backend/tests/ -v
+
+# Verify frontend production build
+cd frontend
+npm run build
 ```
 
 ---
 
-## 🌐 Endpoints & Documentation
+## 🔒 Security & Data Integrity Principles
 
-- **Web Application Cockpit:** [http://localhost:5173](http://localhost:5173)
-- **Interactive Swagger Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- **ReDoc API Reference:** [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
-- **Backend Health Check:** [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
+- **No Hardcoded Secrets**: All credentials, database URIs, and Gemini API keys are loaded strictly from environment variables.
+- **Append-Only Immutable Audit Trail**: All state mutations generate hash-chained structured audit logs backed by PostgreSQL trigger constraints prohibiting `UPDATE` or `DELETE` on the `audit.audit_logs` table.
+- **Tenant Isolation**: Every database entity enforces tenant UUID foreign keys and unique constraints preventing cross-tenant leakage.
+- **Financial Precision**: All monetary values are strictly stored as `NUMERIC(18,2)` (never floating point).
+
+---
+
+## 📜 License
+Built for the Finathon Hackathon. All rights reserved.
