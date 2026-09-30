@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AP Control Engine — Enterprise Accounts Payable Control &amp; Governance</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      // Theme boot — version 4 (force-clear any stale dark mode preferences)
+      (function () {
+        var THEME_VERSION = '4';
+        try {
+          if (localStorage.getItem('themeV') !== THEME_VERSION) {
+            // Version mismatch: wipe stale theme preference, start fresh in LIGHT mode
+            localStorage.removeItem('theme');
+            localStorage.setItem('themeV', THEME_VERSION);
+            document.documentElement.classList.remove('dark');
+          }
+          // Only apply dark if user EXPLICITLY chose it (stored as 'dark' after migration)
+          if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+          // Default: no class = light mode
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

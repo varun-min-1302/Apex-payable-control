@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ap-control-backend"
+version = "0.1.0"
+description = "Enterprise-Grade Accounts Payable Control System - Database Foundation"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "Lead Database Architect", email = "architect@apcontrol.internal" },
+]
+dependencies = [
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.9",
+    "alembic>=1.13.0",
+    "pgvector>=0.2.4",
+    "pydantic>=2.6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".."]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["database"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90
