@@ -83,6 +83,8 @@ export interface InvoiceSummary {
 
   purchase_order_id: string | null;
 
+  po_number?: string | null;
+
   invoice_number: string;
 
   invoice_date: string;
@@ -805,6 +807,8 @@ export interface InvoiceExplanation {
   blocking_reasons: BlockingReason[];
 
   passed_checks: number;
+
+  total_checks?: number;
 
   next_action: string;
 

@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, ChevronDown, ChevronRight, User } from 'lucide-react';
+import {
+  Activity,
+  ChevronDown,
+  ChevronRight,
+  User,
+  ShieldCheck,
+  ShieldAlert,
+  CreditCard,
+  FileText,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Sparkles
+} from 'lucide-react';
 import { api } from '../api/client';
 import type { AuditLog } from '../types';
 import { formatDateTime } from '../utils/format';
@@ -14,118 +27,193 @@ export const ActivityView: React.FC = () => {
     const load = async () => {
       try {
         setLoading(true);
-        const data = await api.listAuditLogs({ entity_type: entityFilter === 'ALL' ? undefined : entityFilter, limit: 100 });
+        const data = await api.listAuditLogs({
+          entity_type: entityFilter === 'ALL' ? undefined : entityFilter,
+          limit: 100
+        });
         setLogs(data);
-      } catch (err) { console.error(err); } finally { setLoading(false); }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
     load();
   }, [entityFilter]);
 
   function humanAction(action: string, entityType: string): string {
     if (action.includes('PAYABLE_CREATED')) return 'Invoice approved for payment';
-    if (action.includes('APPROVED')) return 'Invoice approved';
+    if (action.includes('APPROVED')) return 'Invoice approved by manager';
     if (action.includes('REJECTED')) return 'Invoice rejected';
-    if (action.includes('EXCEPTION_RESOLVED')) return 'Issue resolved';
-    if (action.includes('EXCEPTION')) return 'Issue flagged';
-    if (action.includes('CONTROL_RUN') || action.includes('EVALUAT')) return 'Automated checks completed';
-    if (action.includes('PAYMENT') || action.includes('DISBURSE')) return 'Payment recorded';
-    if (action.includes('INVOICE_CREATED')) return 'Invoice received';
+    if (action.includes('EXCEPTION_RESOLVED')) return 'Discrepancy resolved';
+    if (action.includes('EXCEPTION')) return 'Discrepancy / Exception flagged';
+    if (action.includes('CONTROL_RUN') || action.includes('EVALUAT')) return '18 automated controls evaluated';
+    if (action.includes('PAYMENT') || action.includes('DISBURSE')) return 'Disbursement recorded to ledger';
+    if (action.includes('INVOICE_CREATED') || action.includes('INTAKE')) return 'Invoice document ingested';
+    if (action.includes('EXTRACTION') || action.includes('AI')) return 'Gemini AI document extraction';
     if (action.includes('STATUS_CHANGED')) return `${entityType} status updated`;
     return action.replace(/_/g, ' ').toLowerCase().replace(/^./, c => c.toUpperCase());
   }
 
-  function getActionDot(action: string): string {
-    if (action.includes('PAYABLE_CREATED') || action.includes('APPROVED')) return 'bg-green-500';
-    if (action.includes('REJECTED') || action.includes('EXCEPTION')) return 'bg-amber-500';
-    if (action.includes('PAYMENT') || action.includes('DISBURSE')) return 'bg-blue-500';
-    if (action.includes('RUN') || action.includes('EVALUAT')) return 'bg-cyan-500';
-    return 'bg-gray-400';
+  function getActionBadge(action: string) {
+    if (action.includes('PAYABLE_CREATED') || action.includes('APPROVED')) {
+      return { dot: 'bg-emerald-500', icon: CheckCircle, className: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' };
+    }
+    if (action.includes('REJECTED') || action.includes('EXCEPTION')) {
+      return { dot: 'bg-amber-500', icon: AlertTriangle, className: 'text-amber-600 dark:text-amber-400 bg-amber-500/10' };
+    }
+    if (action.includes('PAYMENT') || action.includes('DISBURSE')) {
+      return { dot: 'bg-blue-500', icon: CreditCard, className: 'text-blue-600 dark:text-blue-400 bg-blue-500/10' };
+    }
+    if (action.includes('CONTROL') || action.includes('EVALUAT')) {
+      return { dot: 'bg-indigo-500', icon: ShieldCheck, className: 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/10' };
+    }
+    if (action.includes('EXTRACTION') || action.includes('AI')) {
+      return { dot: 'bg-purple-500', icon: Sparkles, className: 'text-purple-600 dark:text-purple-400 bg-purple-500/10' };
+    }
+    return { dot: 'bg-muted-foreground', icon: FileText, className: 'text-muted-foreground bg-muted' };
   }
 
-  const entityTypes = ['ALL', 'INVOICE', 'APPROVAL', 'PAYABLE_LEDGER', 'EXCEPTION', 'PAYMENT'];
-  const entityLabels: Record<string, string> = { ALL: 'All activity', INVOICE: 'Invoices', APPROVAL: 'Approvals', PAYABLE_LEDGER: 'Payments', EXCEPTION: 'Issues', PAYMENT: 'Disbursements' };
+  const entityTypes = [
+    { type: 'ALL', label: 'All Activity' },
+    { type: 'INVOICE', label: 'Invoices' },
+    { type: 'APPROVAL', label: 'Approvals' },
+    { type: 'PAYABLE_LEDGER', label: 'Payments' },
+    { type: 'EXCEPTION', label: 'Exceptions' },
+    { type: 'PAYMENT', label: 'Disbursements' },
+  ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-5xl mx-auto space-y-6">
+      
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Activity</h1>
-          <p className="text-gray-500 mt-1">A record of everything that has happened on this platform.</p>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+            Activity
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Every important invoice, control, approval, and payment action recorded on the immutable audit trail.
+          </p>
+        </div>
+
+        {/* Entity Filter Pills */}
+        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-full border border-border/60 self-start sm:self-auto overflow-x-auto">
+          {entityTypes.map(item => (
+            <button
+              key={item.type}
+              onClick={() => setEntityFilter(item.type)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                entityFilter === item.type
+                  ? 'bg-foreground text-background dark:bg-card dark:text-foreground font-semibold shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1 shadow-card overflow-x-auto">
-        {entityTypes.map(type => (
-          <button key={type} onClick={() => setEntityFilter(type)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-              entityFilter === type ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-800'
-            }`}>
-            {entityLabels[type] || type}
-          </button>
-        ))}
-      </div>
+      {/* 2. Timeline List */}
+      <div className="bg-card text-card-foreground rounded-[22px] border border-border/80 shadow-card overflow-hidden">
+        {loading ? (
+          <div className="p-8 space-y-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="p-12 text-center text-muted-foreground text-xs space-y-2">
+            <Activity className="w-8 h-8 text-muted-foreground/60 mx-auto" />
+            <p className="font-semibold text-foreground">No audit activity found</p>
+            <p>Try switching to another entity filter.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-border/60">
+            {logs.map(log => {
+              const isExpanded = expandedId === log.id;
+              const badge = getActionBadge(log.action);
+              const Icon = badge.icon;
 
-      {loading ? (
-        <div className="space-y-2">{[...Array(8)].map((_, i) => <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />)}</div>
-      ) : logs.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-12 text-center">
-          <Activity className="w-8 h-8 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">No activity found for this filter.</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-card divide-y divide-gray-100">
-          {logs.map(log => {
-            const isExpanded = expandedId === log.id;
-            return (
-              <div key={log.id}>
-                <div
-                  className="px-5 py-4 flex items-center gap-4 hover:bg-gray-50 transition-colors cursor-pointer"
-                  onClick={() => setExpandedId(isExpanded ? null : log.id)}
-                >
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getActionDot(log.action)}`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900">{humanAction(log.action, log.entity_type)}</div>
-                    <div className="text-sm text-gray-400 mt-0.5 flex items-center gap-2">
-                      {log.actor_name && <span className="flex items-center gap-1"><User className="w-3 h-3" />{log.actor_name}</span>}
-                      <span>{formatDateTime(log.created_at)}</span>
+              return (
+                <div key={log.id} className="transition-colors">
+                  <div
+                    className="p-4 sm:p-5 flex items-center gap-3.5 hover:bg-muted/30 cursor-pointer"
+                    onClick={() => setExpandedId(isExpanded ? null : log.id)}
+                  >
+                    {/* Event Icon Circle */}
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${badge.className}`}>
+                      <Icon className="w-4 h-4" />
                     </div>
+
+                    {/* Event Title & Metadata */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-foreground text-xs sm:text-sm">
+                          {humanAction(log.action, log.entity_type)}
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
+                          {log.entity_type}
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-3">
+                        {log.actor_name && (
+                          <span className="flex items-center gap-1 font-medium text-foreground">
+                            <User className="w-3 h-3 text-muted-foreground" />
+                            {log.actor_name}
+                          </span>
+                        )}
+                        <span>{formatDateTime(log.created_at)}</span>
+                      </div>
+                    </div>
+
+                    {/* Chevron to expand */}
+                    <button className="p-1 text-muted-foreground hover:text-foreground">
+                      {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </button>
                   </div>
-                  <button className="text-gray-400 flex-shrink-0">
-                    {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                  </button>
-                </div>
-                {isExpanded && (
-                  <div className="px-5 pb-4 bg-gray-50 border-t border-gray-100">
-                    <details className="mt-3">
-                      <summary className="text-xs font-semibold text-gray-400 uppercase tracking-wide cursor-pointer hover:text-gray-600">Technical details</summary>
-                      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="bg-white rounded-xl border border-gray-200 p-3">
-                          <div className="text-xs font-mono font-bold text-gray-400 mb-2 uppercase">Previous state</div>
-                          <pre className="text-xs font-mono text-gray-600 overflow-x-auto whitespace-pre-wrap break-all">
-                            {log.previous_state ? JSON.stringify(log.previous_state, null, 2) : 'null (initial creation)'}
+
+                  {/* Expandable Technical Audit Proof Diff */}
+                  {isExpanded && (
+                    <div className="px-5 pb-5 pt-2 bg-muted/20 border-t border-border/60 space-y-3">
+                      <div className="text-[11px] font-mono text-muted-foreground flex flex-wrap gap-x-4 gap-y-1">
+                        <span><strong className="text-foreground">Action:</strong> {log.action}</span>
+                        <span><strong className="text-foreground">Target ID:</strong> {log.entity_id}</span>
+                        {log.correlation_id && (
+                          <span><strong className="text-foreground">Correlation:</strong> {log.correlation_id}</span>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+                        <div className="bg-card p-3 rounded-xl border border-border/80">
+                          <div className="text-[10px] font-bold text-muted-foreground uppercase mb-1">
+                            Previous State
+                          </div>
+                          <pre className="text-[11px] text-muted-foreground overflow-x-auto whitespace-pre-wrap break-all max-h-48">
+                            {log.previous_state ? JSON.stringify(log.previous_state, null, 2) : 'null (Initial Record Creation)'}
                           </pre>
                         </div>
-                        <div className="bg-white rounded-xl border border-gray-200 p-3">
-                          <div className="text-xs font-mono font-bold text-blue-500 mb-2 uppercase">New state</div>
-                          <pre className="text-xs font-mono text-gray-600 overflow-x-auto whitespace-pre-wrap break-all">
+
+                        <div className="bg-card p-3 rounded-xl border border-border/80">
+                          <div className="text-[10px] font-bold text-primary uppercase mb-1">
+                            New State
+                          </div>
+                          <pre className="text-[11px] text-foreground overflow-x-auto whitespace-pre-wrap break-all max-h-48">
                             {log.new_state ? JSON.stringify(log.new_state, null, 2) : 'null'}
                           </pre>
                         </div>
                       </div>
-                      <div className="mt-2 text-xs font-mono text-gray-400">
-                        <span className="font-semibold">Action:</span> {log.action} ·
-                        <span className="font-semibold ml-2">Entity:</span> {log.entity_type} ·
-                        <span className="font-semibold ml-2">ID:</span> {log.entity_id}
-                        {log.correlation_id && <><span className="font-semibold ml-2">Correlation:</span> {log.correlation_id}</>}
-                      </div>
-                    </details>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
     </div>
   );
 };

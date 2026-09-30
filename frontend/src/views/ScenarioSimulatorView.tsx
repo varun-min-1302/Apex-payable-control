@@ -409,14 +409,14 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
         </div>
 
         {/* Mode Selector */}
-        <div className="flex items-center gap-1 bg-white border border-gray-200 p-1 rounded-xl shadow-xs self-start md:self-auto">
+        <div className="flex items-center gap-1 bg-muted/60 border border-border/60 p-1 rounded-full shadow-xs self-start md:self-auto">
           <button
             type="button"
             onClick={() => setMode('simulator')}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
               mode === 'simulator'
-                ? 'bg-gray-900 text-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                ? 'bg-foreground text-background dark:bg-card dark:text-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Sliders className="w-3.5 h-3.5" />
@@ -428,10 +428,10 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
               setMode('demo');
               if (selectedScenarioId) fetchDemoSteps(selectedScenarioId);
             }}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
               mode === 'demo'
-                ? 'bg-gray-900 text-white'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                ? 'bg-foreground text-background dark:bg-card dark:text-foreground shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
@@ -441,19 +441,19 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
       </div>
 
       {/* Scenario Selector Row */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-card">
+      <div className="bg-card text-card-foreground rounded-[22px] border border-border/80 p-5 shadow-card">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-            <FlaskConical className="w-4 h-4 text-indigo-600" />
+          <span className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+            <FlaskConical className="w-4 h-4 text-primary" />
             Select Test Scenario (Scenarios A through O)
           </span>
-          <span className="text-xs text-gray-400 font-mono">
+          <span className="text-xs text-muted-foreground font-mono">
             {scenarios.length} Scenarios Available
           </span>
         </div>
 
         {loading ? (
-          <div className="h-14 bg-gray-100 rounded-xl animate-pulse" />
+          <div className="h-14 bg-muted rounded-xl animate-pulse" />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
             {scenarios.map(sc => {
@@ -467,12 +467,12 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
                   onClick={() => setSelectedScenarioId(sc.scenario_id)}
                   className={`p-2.5 rounded-xl border text-left transition-all relative ${
                     isSelected
-                      ? 'bg-indigo-50/80 border-indigo-500 ring-2 ring-indigo-500/20 shadow-xs'
-                      : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50/60'
+                      ? 'bg-primary/10 border-primary ring-2 ring-primary/20 shadow-xs'
+                      : 'bg-card border-border hover:border-border/80 hover:bg-muted/50'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs text-indigo-700">
+                    <span className="font-mono font-bold text-xs text-primary">
                       {sc.scenario_code}
                     </span>
                     <span
@@ -482,10 +482,10 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
                       title={isPassing ? 'Expected Pass' : 'Expected Exception'}
                     />
                   </div>
-                  <div className="text-[11px] font-semibold text-gray-900 truncate mt-1">
+                  <div className="text-[11px] font-semibold text-foreground truncate mt-1">
                     {sc.scenario_name.replace(/^Scenario [A-O]:\s*/, '')}
                   </div>
-                  <div className="text-[10px] text-gray-400 truncate mt-0.5">
+                  <div className="text-[10px] text-muted-foreground truncate mt-0.5">
                     {sc.invoice_number}
                   </div>
                 </button>
@@ -497,26 +497,26 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
 
       {/* Active Scenario Summary Card */}
       {activeScenario && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-card flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-card text-card-foreground rounded-[22px] border border-border/80 p-5 shadow-card flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono font-bold text-sm text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-100">
+              <span className="font-mono font-bold text-sm text-primary bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20">
                 {activeScenario.scenario_code}
               </span>
-              <h2 className="text-base font-bold text-gray-900">{activeScenario.scenario_name}</h2>
+              <h2 className="text-base font-bold text-foreground">{activeScenario.scenario_name}</h2>
               <span
                 className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
                   activeScenario.expected_outcome === 'PAYABLE_CREATED' || activeScenario.expected_outcome === 'APPROVED'
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : 'bg-red-50 text-red-700 border-red-200'
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
                 }`}
               >
                 Expected: {activeScenario.expected_outcome}
               </span>
             </div>
-            <p className="text-xs text-gray-600 mt-1">{activeScenario.summary}</p>
-            <div className="flex items-center gap-3 text-[11px] text-gray-500 pt-1">
-              <span>Primary Control: <strong className="text-gray-800 font-mono">{activeScenario.primary_control}</strong></span>
+            <p className="text-xs text-muted-foreground mt-1">{activeScenario.summary}</p>
+            <div className="flex items-center gap-3 text-[11px] text-muted-foreground pt-1">
+              <span>Primary Control: <strong className="text-foreground font-mono">{activeScenario.primary_control}</strong></span>
               <span>·</span>
               <span>Category: <strong className="text-gray-800">{activeScenario.risk_category}</strong></span>
               <span>·</span>
@@ -538,28 +538,28 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
 
       {/* DEMO MODE VIEW */}
       {mode === 'demo' && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-card space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-4 gap-3">
+        <div className="bg-card text-card-foreground rounded-[22px] border border-border/80 p-6 shadow-card space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border/60 pb-4 gap-3">
             <div>
-              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-amber-500" />
                 Hackathon Presentation Walkthrough Mode
               </h3>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Structured narrative demonstrating how the control engine detects risks, enforces policy, and records auditable transactions.
               </p>
             </div>
 
             {/* Track Switcher */}
-            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold self-start sm:self-auto">
+            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-full text-xs font-semibold self-start sm:self-auto border border-border/60">
               <button
                 type="button"
                 onClick={() => {
                   setDemoTrack('e2e');
                   setActiveStepIndex(0);
                 }}
-                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-                  demoTrack === 'e2e' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-600 hover:text-gray-900'
+                className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
+                  demoTrack === 'e2e' ? 'bg-foreground text-background dark:bg-card dark:text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <ListOrdered className="w-3.5 h-3.5" />
@@ -572,8 +572,8 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
                   setActiveStepIndex(0);
                   if (selectedScenarioId) fetchDemoSteps(selectedScenarioId);
                 }}
-                className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
-                  demoTrack === 'scenario' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-600 hover:text-gray-900'
+                className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 ${
+                  demoTrack === 'scenario' ? 'bg-foreground text-background dark:bg-card dark:text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 <FlaskConical className="w-3.5 h-3.5" />
@@ -699,14 +699,14 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Column (5 cols): What-If Sandbox Controls */}
             <div className="lg:col-span-5 space-y-4">
-              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-card space-y-4">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div className="bg-card text-card-foreground rounded-[22px] border border-border/80 p-5 shadow-card space-y-4">
+                <div className="flex items-center justify-between border-b border-border/60 pb-3">
                   <div>
-                    <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                      <Sliders className="w-4 h-4 text-indigo-600" />
-                      "What-If?" Sandbox Controls
+                    <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                      <Sliders className="w-4 h-4 text-primary" />
+                      &ldquo;What-If?&rdquo; Sandbox Controls
                     </h3>
-                    <p className="text-[11px] text-gray-500 mt-0.5">
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
                       Adjust transaction variables to observe deterministic control changes.
                     </p>
                   </div>
@@ -981,15 +981,15 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
             <div className="lg:col-span-7 space-y-4">
               {/* Before vs. After Diff (if What-If was executed) */}
               {whatIfResponse && (
-                <div className="bg-white rounded-2xl border-2 border-indigo-200 p-5 shadow-card space-y-4">
-                  <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div className="bg-card text-card-foreground rounded-[22px] border-2 border-primary/30 p-5 shadow-card space-y-4">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-3">
                     <div className="flex items-center gap-2">
-                      <ArrowLeftRight className="w-5 h-5 text-indigo-600" />
+                      <ArrowLeftRight className="w-5 h-5 text-primary" />
                       <div>
-                        <h4 className="text-sm font-bold text-gray-900">
+                        <h4 className="text-sm font-bold text-foreground">
                           Before vs. After Simulation Diff
                         </h4>
-                        <p className="text-[11px] text-gray-500">
+                        <p className="text-[11px] text-muted-foreground">
                           Direct comparison between baseline scenario and simulated overrides.
                         </p>
                       </div>
@@ -1128,10 +1128,10 @@ export const ScenarioSimulatorView: React.FC<ScenarioSimulatorViewProps> = ({ on
 
               {/* Simulation Decision & Next Action Card */}
               {currentSim && (
-                <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-card space-y-4">
+                <div className="bg-card text-card-foreground rounded-[22px] border border-border/80 p-5 shadow-card space-y-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                         {whatIfResponse ? 'Simulated Decision' : 'Baseline Decision'}
                       </span>
                       <div className="flex items-center gap-2.5 mt-1">

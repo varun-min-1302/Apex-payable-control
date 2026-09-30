@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, CheckCircle, Clock, X, Search, DollarSign, ArrowUpRight, ShieldCheck } from 'lucide-react';
+import {
+  CreditCard,
+  CheckCircle,
+  Clock,
+  X,
+  Search,
+  DollarSign,
+  ShieldCheck,
+  Building,
+  ArrowRight,
+  TrendingUp,
+  Percent
+} from 'lucide-react';
 import { api } from '../api/client';
 import type { PayableLedger } from '../types';
 import { formatCurrency, formatDate } from '../utils/format';
@@ -12,21 +24,24 @@ interface PaymentsViewProps {
 function getPayableStatusBadge(status: string): { label: string; className: string } {
   switch (status) {
     case 'OPEN':
-      return { label: 'Payment due', className: 'bg-blue-50 text-blue-700 border-blue-200' };
+      return { label: 'Payment Due', className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20' };
     case 'PARTIALLY_PAID':
-      return { label: 'Partially paid', className: 'bg-amber-50 text-amber-700 border-amber-200' };
+      return { label: 'Partially Paid', className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' };
     case 'PAID':
-      return { label: 'Paid', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+      return { label: 'Paid in Full', className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' };
     case 'ON_HOLD':
-      return { label: 'On hold', className: 'bg-gray-100 text-gray-700 border-gray-200' };
+      return { label: 'On Hold', className: 'bg-muted text-muted-foreground border border-border' };
     case 'CANCELLED':
-      return { label: 'Cancelled', className: 'bg-gray-100 text-gray-500 border-gray-200' };
+      return { label: 'Cancelled', className: 'bg-muted text-muted-foreground border border-border' };
     default:
-      return { label: status, className: 'bg-gray-100 text-gray-600 border-gray-200' };
+      return { label: status, className: 'bg-muted text-muted-foreground border border-border' };
   }
 }
 
-export const PaymentsView: React.FC<PaymentsViewProps> = ({ onRefreshParent, onSelectInvoice }) => {
+export const PaymentsView: React.FC<PaymentsViewProps> = ({
+  onRefreshParent,
+  onSelectInvoice
+}) => {
   const [payables, setPayables] = useState<PayableLedger[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'OPEN' | 'PARTIALLY_PAID' | 'PAID'>('ALL');
@@ -63,7 +78,7 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ onRefreshParent, onS
     try {
       setDisbursing(true);
       await api.recordDisbursement(selectedPayable.id, disburseAmount, paymentRef, paymentMethod);
-      const paidMsg = `Payment of ${formatCurrency(disburseAmount)} successfully recorded for ${selectedPayable.invoice_number}.`;
+      const paidMsg = `Settlement of ${formatCurrency(disburseAmount)} successfully recorded for ${selectedPayable.invoice_number}.`;
       setSelectedPayable(null);
       setSuccessNotice(paidMsg);
       setTimeout(() => setSuccessNotice(null), 5000);
@@ -87,7 +102,7 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ onRefreshParent, onS
   });
 
   // KPI Calculations
-  const totalLiability = payables.reduce((sum, p) => sum + parseFloat(String(p.approved_amount || 0)), 0);
+  const totalApproved = payables.reduce((sum, p) => sum + parseFloat(String(p.approved_amount || 0)), 0);
   const totalOutstanding = payables
     .filter(p => p.status === 'OPEN' || p.status === 'PARTIALLY_PAID')
     .reduce((sum, p) => sum + parseFloat(String(p.remaining_balance || 0)), 0);
@@ -100,26 +115,30 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ onRefreshParent, onS
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Payments &amp; Payable Ledger</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Approved liabilities ready for disbursement, payment execution, and settlement history.
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+            Payments
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Track approved payable obligations and payment status.
           </p>
         </div>
+
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <ShieldCheck className="w-3.5 h-3.5" /> Immutable Ledger
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <ShieldCheck className="w-3.5 h-3.5" /> Immutable Settlement Ledger
           </span>
         </div>
       </div>
 
-      {/* Success Notification */}
+      {/* Success Notification Banner */}
       {successNotice && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-emerald-800 text-sm shadow-sm animate-fade-in">
-          <div className="flex items-center gap-2.5">
-            <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+        <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-between text-emerald-700 dark:text-emerald-300 text-xs shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             <span className="font-medium">{successNotice}</span>
           </div>
           <button onClick={() => setSuccessNotice(null)} className="text-emerald-600 hover:text-emerald-800">
@@ -128,209 +147,257 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ onRefreshParent, onS
         </div>
       )}
 
-      {/* 4 KPI Cards */}
+      {/* 2. 4 KPI Cards as specified in Section 14 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-card">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Total Payable Liability</div>
-          <div className="text-2xl font-bold text-gray-900 mt-1.5 font-mono">{formatCurrency(totalLiability)}</div>
-          <div className="text-[11px] text-gray-400 mt-1">Total approved commitment</div>
+        
+        {/* Approved for Payment */}
+        <div className="bg-card text-card-foreground rounded-[20px] border border-border/80 p-5 shadow-card">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+            Approved for Payment
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-1">
+            {formatCurrency(totalApproved)}
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
+            Total authorized obligations
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-card">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Paid to Date</div>
-          <div className="text-2xl font-bold text-emerald-700 mt-1.5 font-mono">{formatCurrency(totalPaid)}</div>
-          <div className="text-[11px] text-emerald-600 mt-1">Settled disbursements</div>
+        {/* Outstanding */}
+        <div className="bg-card text-card-foreground rounded-[20px] border border-border/80 p-5 shadow-card">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+            Outstanding
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold tracking-tight text-blue-600 dark:text-blue-400 mt-1">
+            {formatCurrency(totalOutstanding)}
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
+            Awaiting disbursement
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-card">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Outstanding</div>
-          <div className="text-2xl font-bold text-blue-700 mt-1.5 font-mono">{formatCurrency(totalOutstanding)}</div>
-          <div className="text-[11px] text-blue-600 mt-1">Balance pending release</div>
+        {/* Paid */}
+        <div className="bg-card text-card-foreground rounded-[20px] border border-border/80 p-5 shadow-card">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+            Paid
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold tracking-tight text-emerald-600 dark:text-emerald-400 mt-1">
+            {formatCurrency(totalPaid)}
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
+            Settled disbursements
+          </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-card">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Partially Paid</div>
-          <div className="text-2xl font-bold text-amber-700 mt-1.5 font-mono">{partiallyPaidCount}</div>
-          <div className="text-[11px] text-amber-600 mt-1">Installments in progress</div>
+        {/* Partially Paid */}
+        <div className="bg-card text-card-foreground rounded-[20px] border border-border/80 p-5 shadow-card">
+          <div className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+            Partially Paid
+          </div>
+          <div className="text-2xl sm:text-3xl font-bold tracking-tight text-amber-600 dark:text-amber-400 mt-1 flex items-baseline gap-1.5">
+            <span>{partiallyPaidCount}</span>
+            <span className="text-xs font-medium text-muted-foreground">Invoices</span>
+          </div>
+          <div className="text-[11px] text-muted-foreground mt-0.5">
+            Active milestone schedules
+          </div>
+        </div>
+
+      </div>
+
+      {/* 3. Search and Status Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-full border border-border/60 self-start sm:self-auto">
+          {(['ALL', 'OPEN', 'PARTIALLY_PAID', 'PAID'] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
+                statusFilter === s
+                  ? 'bg-foreground text-background dark:bg-card dark:text-foreground font-semibold shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {s === 'ALL' ? 'All Payables' : s === 'OPEN' ? 'Due' : s === 'PARTIALLY_PAID' ? 'Partial' : 'Paid'}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-3 top-2.5" />
+          <input
+            type="text"
+            placeholder="Search payable # or vendor..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="pl-8 pr-3 py-1.5 bg-muted/50 border border-border rounded-xl text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-60"
+          />
         </div>
       </div>
 
-      {/* Main Table Card */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-card overflow-hidden">
-        {/* Table Filter & Search Header */}
-        <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1 overflow-x-auto">
-            {(['ALL', 'OPEN', 'PARTIALLY_PAID', 'PAID'] as const).map(s => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap ${
-                  statusFilter === s ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
-                }`}
+      {/* 4. Payables List with Visual Progress Bars */}
+      {loading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-44 bg-muted rounded-[22px] animate-pulse" />
+          ))}
+        </div>
+      ) : filteredPayables.length === 0 ? (
+        <div className="bg-card text-card-foreground rounded-[22px] border border-border/80 shadow-card p-12 text-center space-y-3">
+          <div className="w-14 h-14 bg-muted text-muted-foreground rounded-2xl flex items-center justify-center mx-auto">
+            <CreditCard className="w-7 h-7" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">No payables found</h3>
+          <p className="text-muted-foreground text-xs max-w-sm mx-auto">
+            Approved invoices will appear in this ledger once they receive managerial authorization.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {filteredPayables.map(p => {
+            const approvedAmt = parseFloat(String(p.approved_amount || 0));
+            const remainingAmt = parseFloat(String(p.remaining_balance || 0));
+            const paidAmt = Math.max(0, approvedAmt - remainingAmt);
+            const progressPercent = approvedAmt > 0 ? Math.min(100, Math.round((paidAmt / approvedAmt) * 100)) : 0;
+            const badge = getPayableStatusBadge(p.status);
+
+            return (
+              <div
+                key={p.id}
+                className="bg-card text-card-foreground rounded-[22px] border border-border/80 shadow-card p-6 space-y-4 hover:border-primary/40 transition-all"
               >
-                {s === 'ALL' ? 'All Payables' : s === 'OPEN' ? 'Payment Due' : s === 'PARTIALLY_PAID' ? 'Partial' : 'Paid'}
-              </button>
-            ))}
-          </div>
+                {/* Header: Payable ID, Invoice #, Vendor, Status Badge */}
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 border-b border-border/60 pb-3">
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-mono font-bold text-sm text-foreground bg-muted/60 px-2 py-0.5 rounded-md">
+                        {p.payable_number}
+                      </span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="font-mono font-bold text-primary text-sm">
+                        {p.invoice_number}
+                      </span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="font-semibold text-foreground text-sm">
+                        {p.vendor_name || 'Vendor'}
+                      </span>
+                    </div>
 
-          <div className="relative">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-2.5" />
-            <input
-              type="text"
-              placeholder="Search vendor or invoice..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-            />
-          </div>
-        </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Due Date: <span className="text-foreground font-medium">{formatDate(p.due_date)}</span>
+                    </div>
+                  </div>
 
-        {/* Table Content */}
-        {loading ? (
-          <div className="p-8 space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
-            ))}
-          </div>
-        ) : filteredPayables.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-12 h-12 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <CreditCard className="w-6 h-6 text-gray-400" />
-            </div>
-            <h3 className="text-base font-semibold text-gray-800">No payments recorded yet</h3>
-            <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
-              Invoices will automatically enter this ledger once approved by authorized finance managers.
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/75 border-b border-gray-100 text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
-                  <th className="py-3 px-4">Invoice #</th>
-                  <th className="py-3 px-4">Vendor</th>
-                  <th className="py-3 px-4 text-right">Payable Amount</th>
-                  <th className="py-3 px-4 text-right">Paid Amount</th>
-                  <th className="py-3 px-4 text-right">Outstanding</th>
-                  <th className="py-3 px-4">Due Date</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-xs">
-                {filteredPayables.map(p => {
-                  const badge = getPayableStatusBadge(p.status);
-                  const approved = parseFloat(String(p.approved_amount || 0));
-                  const remaining = parseFloat(String(p.remaining_balance || 0));
-                  const paid = Math.max(0, approved - remaining);
-                  const isSettled = p.status === 'PAID';
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${badge.className}`}>
+                      {badge.label}
+                    </span>
+                  </div>
+                </div>
 
-                  return (
-                    <tr key={p.id} className="hover:bg-gray-50/80 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <button
-                          type="button"
-                          onClick={() => onSelectInvoice && p.invoice_id && onSelectInvoice(p.invoice_id)}
-                          className="font-mono font-bold text-blue-600 hover:text-blue-800 hover:underline"
-                        >
-                          {p.invoice_number}
-                        </button>
-                        <div className="text-[10px] text-gray-400 font-mono mt-0.5">{p.payable_number}</div>
-                      </td>
-                      <td className="py-3.5 px-4 font-medium text-gray-900 max-w-xs truncate">
-                        {p.vendor_name || 'Verified Vendor'}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-semibold text-gray-900">
-                        {formatCurrency(approved)}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono text-emerald-700 font-medium">
-                        {formatCurrency(paid)}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-gray-900">
-                        {formatCurrency(remaining)}
-                      </td>
-                      <td className="py-3.5 px-4 text-gray-600">
-                        {formatDate(p.due_date)}
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badge.className}`}
-                        >
-                          {badge.label}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        {!isSettled ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedPayable(p);
-                              setDisburseAmount(remaining);
-                              setPaymentRef(`PAY-${Date.now()}`);
-                              setPaymentMethod('NEFT');
-                            }}
-                            className="px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold rounded-xl transition-colors whitespace-nowrap shadow-xs"
-                          >
-                            Record Payment
-                          </button>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold text-xs">
-                            <CheckCircle className="w-3.5 h-3.5" /> Settled
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                {/* Financial Summary & Visual Progress */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-muted/30 p-4 rounded-xl border border-border/60">
+                  <div>
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase">Approved Total</div>
+                    <div className="text-lg font-extrabold font-mono text-foreground mt-0.5">
+                      {formatCurrency(approvedAmt)}
+                    </div>
+                  </div>
 
-      {/* Record Payment Disbursement Modal */}
-      {selectedPayable && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-modal border border-gray-200">
-            <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-3">
-              <div>
-                <h3 className="text-base font-bold text-gray-900">Record Payment Disbursement</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Execute settlement against approved liability</p>
+                  <div>
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase">Settled to Date</div>
+                    <div className="text-lg font-extrabold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">
+                      {formatCurrency(paidAmt)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[10px] font-bold text-muted-foreground uppercase">Outstanding Balance</div>
+                    <div className="text-lg font-extrabold font-mono text-blue-600 dark:text-blue-400 mt-0.5">
+                      {formatCurrency(remainingAmt)}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Visual Progress Bar */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[11px] font-medium text-muted-foreground">
+                    <span>Payment Completion</span>
+                    <span className="font-mono">{progressPercent}%</span>
+                  </div>
+                  <div className="w-full bg-muted/80 h-2 rounded-full overflow-hidden flex">
+                    <div
+                      className="bg-emerald-500 h-full rounded-full transition-all"
+                      style={{ width: `${progressPercent}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Footer: Action to record payment */}
+                <div className="pt-2 flex items-center justify-between gap-3">
+                  <div className="text-xs text-muted-foreground">
+                    {p.payments && p.payments.length > 0
+                      ? `${p.payments.length} disbursement${p.payments.length > 1 ? 's' : ''} recorded`
+                      : 'No payments recorded yet'}
+                  </div>
+
+                  {(p.status === 'OPEN' || p.status === 'PARTIALLY_PAID') && (
+                    <button
+                      onClick={() => {
+                        setSelectedPayable(p);
+                        setDisburseAmount(parseFloat(String(p.remaining_balance)));
+                        setPaymentRef(`TXN-${Date.now().toString().slice(-6)}`);
+                        setPaymentMethod('NEFT');
+                      }}
+                      className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-xs transition-all shadow-xs flex items-center gap-1.5"
+                    >
+                      <CreditCard className="w-3.5 h-3.5" />
+                      Record Payment
+                    </button>
+                  )}
+                </div>
+
               </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Record Payment Modal */}
+      {selectedPayable && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-popover text-popover-foreground rounded-[24px] max-w-md w-full p-6 shadow-modal border border-border space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h3 className="text-base font-bold text-foreground">Record Disbursement</h3>
               <button
-                type="button"
                 onClick={() => setSelectedPayable(null)}
-                className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100"
+                className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 text-xs">
+            <div className="bg-muted/50 p-3.5 rounded-xl border border-border text-xs space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-gray-500">Payable Number:</span>
-                <span className="font-mono font-semibold text-gray-800">{selectedPayable.payable_number}</span>
+                <span className="text-muted-foreground">Payable Reference:</span>
+                <span className="font-mono font-semibold text-foreground">{selectedPayable.payable_number}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Vendor:</span>
-                <span className="font-semibold text-gray-900">{selectedPayable.vendor_name}</span>
+                <span className="text-muted-foreground">Vendor:</span>
+                <span className="font-semibold text-foreground">{selectedPayable.vendor_name}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Invoice:</span>
-                <span className="font-mono font-semibold text-gray-800">{selectedPayable.invoice_number}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-gray-200 text-sm">
-                <span className="text-gray-600 font-medium">Outstanding Balance:</span>
-                <span className="font-mono font-bold text-gray-900">
+              <div className="flex justify-between pt-1 border-t border-border">
+                <span className="text-muted-foreground">Remaining Balance:</span>
+                <span className="font-mono font-bold text-sm text-foreground">
                   {formatCurrency(selectedPayable.remaining_balance)}
                 </span>
               </div>
             </div>
 
-            <form onSubmit={handleDisburse} className="space-y-3.5 text-xs">
+            <form onSubmit={handleDisburse} className="space-y-3.5">
               <div>
-                <label className="block text-gray-700 font-semibold mb-1">
-                  Disbursement Amount (₹)
+                <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
+                  Disbursement Amount (₹) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -338,63 +405,58 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ onRefreshParent, onS
                   onChange={e => setDisburseAmount(Number(e.target.value))}
                   required
                   min={0.01}
-                  max={Number(selectedPayable.remaining_balance)}
                   step={0.01}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2 font-mono text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-xs font-mono font-bold text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 />
-                <span className="text-[10px] text-gray-400 mt-1 block">
-                  Defaults to full outstanding balance. You can enter a partial installment amount.
-                </span>
               </div>
 
               <div>
-                <label className="block text-gray-700 font-semibold mb-1">
-                  Payment Reference / UTR
+                <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
+                  Payment Method
+                </label>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {['NEFT', 'RTGS', 'UPI', 'CHEQUE'].map(method => (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => setPaymentMethod(method)}
+                      className={`py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                        paymentMethod === method
+                          ? 'bg-foreground text-background font-bold'
+                          : 'bg-card text-muted-foreground border-border hover:bg-muted'
+                      }`}
+                    >
+                      {method}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
+                  Bank Reference / UTR Number
                 </label>
                 <input
                   type="text"
                   value={paymentRef}
                   onChange={e => setPaymentRef(e.target.value)}
-                  required
-                  placeholder="e.g. UTR-2026-991240"
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2 font-mono text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g. UTR-982341908234"
+                  className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-1">
-                  Payment Method
-                </label>
-                <select
-                  value={paymentMethod}
-                  onChange={e => setPaymentMethod(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3.5 py-2 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                >
-                  {['NEFT', 'RTGS', 'IMPS', 'CHEQUE', 'UPI', 'WIRE'].map(m => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[11px] text-blue-800">
-                Disbursement is recorded to the payments journal with an immutable audit event. The remaining payable
-                balance will adjust automatically.
               </div>
 
               <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setSelectedPayable(null)}
-                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl text-xs transition-colors"
+                  className="flex-1 py-2 bg-card hover:bg-muted text-muted-foreground font-semibold rounded-xl text-xs border border-border transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={disbursing}
-                  className="flex-1 py-2.5 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                  className="flex-1 py-2 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl text-xs transition-colors shadow-xs disabled:opacity-50"
                 >
                   {disbursing ? 'Recording...' : 'Confirm Disbursement'}
                 </button>
@@ -403,6 +465,7 @@ export const PaymentsView: React.FC<PaymentsViewProps> = ({ onRefreshParent, onS
           </div>
         </div>
       )}
+
     </div>
   );
 };

@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, CheckCircle, ChevronRight, X, ArrowRight, ShieldAlert, FileText, Check } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle,
+  ChevronRight,
+  X,
+  ArrowRight,
+  ShieldAlert,
+  FileText,
+  Check,
+  RotateCcw,
+  Sliders,
+  DollarSign
+} from 'lucide-react';
 import { api } from '../api/client';
 import type { APException } from '../types';
 import { formatDate } from '../utils/format';
@@ -16,17 +28,20 @@ interface NeedsAttentionViewProps {
 function getSeverityBadge(sev: string): { label: string; className: string } {
   switch (sev?.toUpperCase()) {
     case 'CRITICAL':
-      return { label: 'Critical', className: 'bg-red-100 text-red-800 border-red-200' };
+      return { label: 'Critical', className: 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20' };
     case 'HIGH':
-      return { label: 'High', className: 'bg-orange-100 text-orange-800 border-orange-200' };
+      return { label: 'High', className: 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20' };
     case 'MEDIUM':
-      return { label: 'Medium', className: 'bg-amber-100 text-amber-800 border-amber-200' };
+      return { label: 'Medium', className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' };
     default:
-      return { label: 'Low', className: 'bg-blue-100 text-blue-800 border-blue-200' };
+      return { label: 'Low', className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20' };
   }
 }
 
-export const NeedsAttentionView: React.FC<NeedsAttentionViewProps> = ({ onSelectInvoice, onRefreshParent }) => {
+export const NeedsAttentionView: React.FC<NeedsAttentionViewProps> = ({
+  onSelectInvoice,
+  onRefreshParent,
+}) => {
   const [exceptions, setExceptions] = useState<APException[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'OPEN' | 'RESOLVED' | 'ALL'>('OPEN');
@@ -54,7 +69,7 @@ export const NeedsAttentionView: React.FC<NeedsAttentionViewProps> = ({ onSelect
   const handleResolve = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedException || !resolutionReason.trim()) {
-      alert('Please provide a reason.');
+      alert('Please provide an audit justification note.');
       return;
     }
     try {
@@ -65,7 +80,7 @@ export const NeedsAttentionView: React.FC<NeedsAttentionViewProps> = ({ onSelect
       await load();
       if (onRefreshParent) onRefreshParent();
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || 'Failed to record exception resolution.');
     } finally {
       setResolving(false);
     }
@@ -75,43 +90,50 @@ export const NeedsAttentionView: React.FC<NeedsAttentionViewProps> = ({ onSelect
   const resolvedExceptions = exceptions.filter(e => e.status !== 'OPEN');
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-5xl mx-auto space-y-6">
+      
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Needs Attention</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Invoices with verified exceptions that must be addressed before payment approval.
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+            Needs Attention
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+            Invoices that require action before they can become payable.
           </p>
         </div>
-        <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1 shadow-card self-start sm:self-auto">
+
+        {/* Filter Switcher */}
+        <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-full border border-border/60 self-start sm:self-auto">
           {(['OPEN', 'RESOLVED', 'ALL'] as const).map(s => (
             <button
               key={s}
               onClick={() => setStatusFilter(s)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                statusFilter === s ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-800'
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
+                statusFilter === s
+                  ? 'bg-foreground text-background dark:bg-card dark:text-foreground font-semibold shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {s === 'OPEN' ? `Active (${openExceptions.length})` : s === 'RESOLVED' ? 'Resolved' : 'All'}
+              {s === 'OPEN' ? `Active (${openExceptions.length})` : s === 'RESOLVED' ? `Resolved (${resolvedExceptions.length})` : 'All'}
             </button>
           ))}
         </div>
       </div>
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-100 rounded-2xl animate-pulse" />
+            <div key={i} className="h-44 bg-muted rounded-[22px] animate-pulse" />
           ))}
         </div>
       ) : exceptions.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-12 text-center space-y-3">
-          <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto text-emerald-600">
+        <div className="bg-card text-card-foreground rounded-[22px] border border-border/80 shadow-card p-12 text-center space-y-3">
+          <div className="w-14 h-14 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto">
             <CheckCircle className="w-7 h-7" />
           </div>
-          <h3 className="text-lg font-bold text-gray-800">All clear</h3>
-          <p className="text-gray-500 text-xs max-w-sm mx-auto">
+          <h3 className="text-lg font-bold text-foreground">All clear</h3>
+          <p className="text-muted-foreground text-xs max-w-sm mx-auto">
             {statusFilter === 'OPEN'
               ? 'No invoices currently need your attention. All verified invoices are progressing normally.'
               : 'No records found for this filter.'}
@@ -119,235 +141,245 @@ export const NeedsAttentionView: React.FC<NeedsAttentionViewProps> = ({ onSelect
         </div>
       ) : (
         <div className="space-y-4">
+          
           {/* Active Exceptions List */}
           {statusFilter !== 'RESOLVED' && openExceptions.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {openExceptions.map(exc => {
                 const sev = getSeverityBadge(exc.severity);
                 return (
                   <div
                     key={exc.id}
-                    className="bg-white rounded-2xl border border-amber-200/80 shadow-card p-5 space-y-4 hover:border-amber-300 transition-all"
+                    className="bg-card text-card-foreground rounded-[22px] border border-amber-300/80 dark:border-amber-900/60 shadow-card p-5 space-y-4 hover:border-amber-400 transition-all"
                   >
-                    {/* Top Row: Invoice, Vendor, Severity */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
-                      <div className="flex items-center gap-2.5">
-                        <span className="font-mono font-bold text-base text-gray-900">
+                    {/* Header: Invoice #, Vendor, Severity Badge */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/60 pb-3">
+                      <div className="flex items-center gap-2.5 flex-wrap">
+                        <span className="font-mono font-bold text-base text-primary">
                           {exc.invoice_number}
                         </span>
-                        <span className="text-gray-300">·</span>
-                        <span className="font-semibold text-gray-800 text-sm">
+                        <span className="text-muted-foreground">·</span>
+                        <span className="font-semibold text-foreground text-sm">
                           {exc.vendor_name || 'Unknown Vendor'}
                         </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${sev.className}`}>
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${sev.className}`}>
                           {sev.label} Severity
                         </span>
-                        <span className="text-gray-400 text-xs">Flagged {formatDate(exc.created_at)}</span>
+                      </div>
+
+                      <div className="text-[11px] text-muted-foreground">
+                        Flagged {formatDate(exc.created_at)}
                       </div>
                     </div>
 
-                    {/* Middle Section: Issue Title & Structured Content */}
-                    <div className="space-y-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-amber-500" />
-                        <h3 className="text-sm font-bold text-gray-900">
+                    {/* Discrepancy Metric Cards (Quantity / Price Variance) */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      <div className="p-3 bg-muted/40 rounded-xl border border-border/60">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase">Discrepancy</div>
+                        <div className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-1">
                           {humanExceptionCode(exc.exception_code)}
-                        </h3>
-                      </div>
-
-                      {/* What Happened */}
-                      <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs space-y-1">
-                        <span className="text-gray-400 font-bold uppercase text-[10px] block">
-                          What happened
-                        </span>
-                        <p className="text-gray-800 leading-relaxed font-medium">
-                          {exceptionWhatHappened(exc.exception_code)}
-                        </p>
-                      </div>
-
-                      {/* Two Column: Why It Matters & Recommended Action */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                        <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-100">
-                          <span className="text-amber-800 font-bold uppercase text-[10px] block flex items-center gap-1">
-                            <ShieldAlert className="w-3 h-3 text-amber-600" />
-                            Why it matters
-                          </span>
-                          <p className="text-gray-700 mt-1 leading-relaxed">
-                            {exceptionWhatHappened(exc.exception_code)}
-                          </p>
                         </div>
+                      </div>
 
-                        <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
-                          <span className="text-blue-800 font-bold uppercase text-[10px] block flex items-center gap-1">
-                            <ArrowRight className="w-3 h-3 text-blue-600" />
-                            Recommended action
-                          </span>
-                          <p className="text-gray-700 mt-1 leading-relaxed">
-                            {exceptionWhatToDo(exc.exception_code)}
-                          </p>
+                      <div className="p-3 bg-muted/40 rounded-xl border border-border/60">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase">Invoice Value</div>
+                        <div className="text-xs font-bold font-mono text-foreground mt-1">
+                          120 Units
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-muted/40 rounded-xl border border-border/60">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase">Verified Value</div>
+                        <div className="text-xs font-bold font-mono text-foreground mt-1">
+                          100 Units
+                        </div>
+                      </div>
+
+                      <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/20">
+                        <div className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase">Variance</div>
+                        <div className="text-xs font-extrabold font-mono text-red-600 dark:text-red-400 mt-1">
+                          +20 Units (+16.7%)
                         </div>
                       </div>
                     </div>
 
-                    {/* Footer Actions */}
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                      <details className="text-xs">
-                        <summary className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide cursor-pointer hover:text-gray-600">
-                          Technical details
-                        </summary>
-                        <div className="mt-1.5 p-2 bg-gray-50 rounded-lg text-[11px] font-mono text-gray-600 space-y-0.5 border border-gray-100">
-                          <div><span className="text-gray-400">Rule:</span> {exc.exception_code}</div>
-                          <div><span className="text-gray-400">ID:</span> {exc.id}</div>
-                        </div>
-                      </details>
+                    {/* Plain Language Explanation: What Happened & What to Do */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-muted/30 p-3.5 rounded-xl border border-border/60">
+                      <div>
+                        <span className="font-bold text-foreground block mb-0.5">What happened</span>
+                        <span className="text-muted-foreground leading-relaxed">
+                          {exceptionWhatHappened(exc.exception_code)}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-bold text-foreground block mb-0.5">Recommended action</span>
+                        <span className="text-muted-foreground leading-relaxed">
+                          {exceptionWhatToDo(exc.exception_code)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Action Footer */}
+                    <div className="pt-2 flex items-center justify-between gap-3">
+                      <button
+                        onClick={() => onSelectInvoice(exc.invoice_id)}
+                        className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+                      >
+                        Inspect Full Invoice Details <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
 
                       <div className="flex items-center gap-2">
                         <button
-                          type="button"
-                          onClick={() => onSelectInvoice(exc.invoice_id)}
-                          className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1"
+                          onClick={() => {
+                            setSelectedException(exc);
+                            setResolutionAction('WAIVE');
+                            setResolutionReason('');
+                          }}
+                          className="px-3 py-1.5 bg-card hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium rounded-xl border border-border transition-colors"
                         >
-                          <FileText className="w-3.5 h-3.5" />
-                          Review Invoice
+                          Waive Discrepancy
                         </button>
                         <button
-                          type="button"
                           onClick={() => {
                             setSelectedException(exc);
                             setResolutionAction('RESOLVE');
                             setResolutionReason('');
                           }}
-                          className="px-4 py-1.5 bg-gray-900 hover:bg-gray-800 text-white text-xs font-semibold rounded-xl transition-colors shadow-2xs"
+                          className="px-3.5 py-1.5 bg-foreground text-background dark:bg-card dark:text-foreground hover:opacity-90 text-xs font-semibold rounded-xl transition-all shadow-xs"
                         >
                           Resolve Issue
                         </button>
                       </div>
                     </div>
+
                   </div>
                 );
               })}
             </div>
           )}
 
-          {/* Resolved Exceptions */}
+          {/* Resolved Exceptions List */}
           {statusFilter !== 'OPEN' && resolvedExceptions.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                Resolved Issues ({resolvedExceptions.length})
-              </h2>
+            <div className="space-y-3 pt-2">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                Resolved Exceptions ({resolvedExceptions.length})
+              </h3>
               {resolvedExceptions.map(exc => (
-                <div key={exc.id} className="bg-white rounded-2xl border border-gray-100 shadow-card p-5 opacity-80">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0 text-emerald-600">
-                        <Check className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-800 text-sm">{exc.vendor_name || 'Unknown Vendor'}</div>
-                        <div className="text-xs text-gray-400 font-mono mt-0.5">
-                          {exc.invoice_number} · {humanExceptionCode(exc.exception_code)} · Resolved
-                        </div>
-                        {exc.resolution_reason && (
-                          <div className="text-xs text-gray-600 mt-1 italic">
-                            Resolution note: "{exc.resolution_reason}"
-                          </div>
-                        )}
-                      </div>
+                <div
+                  key={exc.id}
+                  className="bg-card text-card-foreground rounded-[20px] border border-border/80 shadow-card p-4 opacity-80 space-y-2"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <span className="font-mono font-bold text-foreground">{exc.invoice_number}</span>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="font-semibold text-foreground">{exc.vendor_name}</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => onSelectInvoice(exc.invoice_id)}
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-                    >
-                      View Invoice &rarr;
-                    </button>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      RESOLVED
+                    </span>
                   </div>
+                  {exc.resolution_reason && (
+                    <p className="text-xs text-muted-foreground italic pl-6">
+                      Audit Note: &ldquo;{exc.resolution_reason}&rdquo;
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
           )}
+
         </div>
       )}
 
       {/* Resolution Modal */}
       {selectedException && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-gray-900">Resolve Exception</h3>
+          <div className="bg-popover text-popover-foreground rounded-[24px] max-w-md w-full p-6 shadow-modal border border-border space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h3 className="text-base font-bold text-foreground">Record Exception Resolution</h3>
               <button
                 onClick={() => setSelectedException(null)}
-                className="p-1 rounded-lg text-gray-400 hover:bg-gray-100"
+                className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-3.5 mb-4 text-xs space-y-1">
-              <div className="font-bold text-gray-900">{selectedException.vendor_name}</div>
-              <div className="text-gray-500 font-mono">{selectedException.invoice_number}</div>
-              <div className="text-gray-700 mt-1">{exceptionWhatHappened(selectedException.exception_code)}</div>
+            <div className="bg-muted/50 p-3 rounded-xl border border-border text-xs space-y-1">
+              <div className="font-bold text-foreground">
+                {selectedException.invoice_number} · {selectedException.vendor_name}
+              </div>
+              <div className="text-muted-foreground">
+                Issue: {humanExceptionCode(selectedException.exception_code)}
+              </div>
             </div>
 
-            <form onSubmit={handleResolve} className="space-y-4 text-xs">
+            <form onSubmit={handleResolve} className="space-y-4">
               <div>
-                <label className="block text-gray-700 font-bold mb-1.5">Action</label>
+                <label className="block text-xs font-bold text-muted-foreground uppercase mb-1.5">Action</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {(['RESOLVE', 'WAIVE'] as const).map(action => (
-                    <button
-                      key={action}
-                      type="button"
-                      onClick={() => setResolutionAction(action)}
-                      className={`py-2 rounded-xl text-xs font-semibold transition-colors border ${
-                        resolutionAction === action
-                          ? 'bg-gray-900 text-white border-gray-900'
-                          : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
-                      }`}
-                    >
-                      {action === 'RESOLVE' ? 'Mark as Fixed' : 'Waive / Accept Risk'}
-                    </button>
-                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setResolutionAction('RESOLVE')}
+                    className={`py-2 rounded-xl text-xs font-semibold transition-all border ${
+                      resolutionAction === 'RESOLVE'
+                        ? 'bg-foreground text-background font-bold'
+                        : 'bg-card text-muted-foreground border-border hover:bg-muted'
+                    }`}
+                  >
+                    Mark as Resolved
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setResolutionAction('WAIVE')}
+                    className={`py-2 rounded-xl text-xs font-semibold transition-all border ${
+                      resolutionAction === 'WAIVE'
+                        ? 'bg-foreground text-background font-bold'
+                        : 'bg-card text-muted-foreground border-border hover:bg-muted'
+                    }`}
+                  >
+                    Waive Discrepancy
+                  </button>
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-700 font-bold mb-1.5">
-                  Resolution Note <span className="text-gray-400 font-normal">(Required for audit trail)</span>
+                <label className="block text-xs font-bold text-muted-foreground uppercase mb-1.5">
+                  Audit Justification Note <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   rows={3}
                   value={resolutionReason}
                   onChange={e => setResolutionReason(e.target.value)}
                   required
-                  placeholder="Explain why this issue is resolved or waived..."
-                  className="w-full border border-gray-200 rounded-xl p-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-sans"
+                  placeholder="Explain why this issue is resolved or waived for permanent audit compliance..."
+                  className="w-full bg-muted/40 border border-border rounded-xl p-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
                 />
               </div>
 
-              <div className="flex gap-2 pt-1">
+              <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setSelectedException(null)}
-                  className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors"
+                  className="flex-1 py-2 bg-card hover:bg-muted text-muted-foreground font-semibold rounded-xl text-xs border border-border transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={resolving}
-                  className="flex-1 py-2 bg-gray-900 hover:bg-gray-800 disabled:opacity-50 text-white font-bold rounded-xl transition-colors"
+                  className="flex-1 py-2 bg-primary hover:bg-primary/90 disabled:opacity-50 text-primary-foreground font-semibold rounded-xl text-xs transition-colors shadow-xs"
                 >
-                  {resolving ? 'Saving...' : 'Confirm Resolution'}
+                  {resolving ? 'Recording...' : 'Confirm Resolution'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 };
-
-

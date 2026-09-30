@@ -309,74 +309,54 @@ file.name.split('.').pop()?.toLowerCase()
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
-      onClick={
-(e) => {
-
+      className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto"
+      onClick={(e) => {
         if (e.target === e.currentTarget && !isUploading) handleClose();
-
-      
-}
-}
+      }}
     >
-      <div className="bg-white rounded-2xl max-w-lg w-full shadow-modal border border-gray-100 overflow-hidden my-6">
-        {
-/* Header */
-}
-        <div className="px-6 py-5 border-b border-gray-100 flex items-start justify-between">
+      <div className="bg-popover text-popover-foreground rounded-[24px] max-w-lg w-full shadow-modal border border-border overflow-hidden my-6 animate-in fade-in zoom-in-95">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-border flex items-start justify-between">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Add a new invoice</h2>
-            <p className="text-sm text-gray-500 mt-0.5">
-              Upload an invoice and we'll prepare it for verification.
+            <h2 className="text-xl font-bold text-foreground">Add a new invoice</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Upload an invoice and we'll prepare it for automated verification.
             </p>
           </div>
           <button
-            onClick={
-handleClose
-}
-            disabled={
-isUploading
-}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-40"
+            onClick={handleClose}
+            disabled={isUploading}
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {
-/* Content */
-}
+        {/* Content */}
         <div className="p-6">
-          {
-/* STATE 1: Success State */
-}
-          {
-uploadResult && !uploadResult.duplicate && (
+          {/* STATE 1: Success State */}
+          {uploadResult && !uploadResult.duplicate && (
             <div className="text-center py-6 space-y-4">
-              <div className="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mx-auto text-green-600">
+              <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto text-emerald-600 dark:text-emerald-400">
                 <CheckCircle className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Invoice uploaded</h3>
-                <p className="text-sm text-gray-600 mt-1 max-w-sm mx-auto">
+                <h3 className="text-lg font-bold text-foreground">Invoice uploaded</h3>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
                   We've received your document. Next, we'll read the invoice details.
                 </p>
               </div>
 
-              <div className="bg-gray-50 border border-gray-100 rounded-xl p-3.5 text-left max-w-md mx-auto flex items-center gap-3">
-                <div className="w-9 h-9 bg-white rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 flex-shrink-0">
-                  <FileText className="w-5 h-5 text-blue-600" />
+              <div className="bg-muted/50 border border-border rounded-xl p-3.5 text-left max-w-md mx-auto flex items-center gap-3">
+                <div className="w-9 h-9 bg-card rounded-lg border border-border flex items-center justify-center text-primary flex-shrink-0">
+                  <FileText className="w-5 h-5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-gray-800 truncate">
-                    {
-uploadResult.filename
-}
+                  <div className="text-sm font-semibold text-foreground truncate">
+                    {uploadResult.filename}
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {
-formatBytes(uploadResult.size_bytes)
-} · Ready for extraction
+                  <div className="text-xs text-muted-foreground">
+                    {formatBytes(uploadResult.size_bytes)} · Ready for extraction
                   </div>
                 </div>
               </div>
@@ -384,76 +364,58 @@ formatBytes(uploadResult.size_bytes)
               <div className="pt-4 space-y-2">
                 <button
                   type="button"
-                  onClick={
-handleExtract
-}
-                  disabled={
-isExtracting
-}
-                  className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
+                  onClick={handleExtract}
+                  disabled={isExtracting}
+                  className="w-full py-2.5 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-xl text-sm transition-all shadow-xs flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <Sparkles className="w-4 h-4" />
-                  {
-isExtracting ? 'Extracting with Gemini AI...' : 'Extract details with AI'
-}
+                  {isExtracting ? 'Extracting with Gemini AI...' : 'Extract details with AI'}
                 </button>
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={
-resetState
-}
-                    className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl text-xs transition-colors"
+                    onClick={resetState}
+                    className="flex-1 py-2 bg-muted hover:bg-muted/80 text-foreground font-medium rounded-xl text-xs transition-colors"
                   >
                     Upload another
                   </button>
                   <button
                     type="button"
-                    onClick={
-handleClose
-}
-                    className="flex-1 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium rounded-xl text-xs transition-colors"
+                    onClick={handleClose}
+                    className="flex-1 py-2 bg-card border border-border hover:bg-muted text-foreground font-medium rounded-xl text-xs transition-colors"
                   >
                     Review later
                   </button>
                 </div>
               </div>
             </div>
-          )
-}
+          )}
 
-          {
-/* STATE 2: Duplicate Document Detected */
-}
-          {
-uploadResult && uploadResult.duplicate && (
+          {/* STATE 2: Duplicate Document Detected */}
+          {uploadResult && uploadResult.duplicate && (
             <div className="text-center py-6 space-y-4">
-              <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto text-amber-600">
+              <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400">
                 <AlertTriangle className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">
+                <h3 className="text-lg font-bold text-foreground">
                   This invoice document has already been uploaded.
                 </h3>
-                <p className="text-sm text-gray-600 mt-1 max-w-sm mx-auto">
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
                   An identical document exists in our system. We avoid creating duplicate copies to prevent double payments.
                 </p>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-left max-w-md mx-auto flex items-center gap-3">
-                <div className="w-9 h-9 bg-white rounded-lg border border-amber-200 flex items-center justify-center text-amber-600 flex-shrink-0">
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3.5 text-left max-w-md mx-auto flex items-center gap-3">
+                <div className="w-9 h-9 bg-card rounded-lg border border-amber-500/30 flex items-center justify-center text-amber-600 dark:text-amber-400 flex-shrink-0">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-gray-800 truncate">
-                    {
-uploadResult.filename
-}
+                  <div className="text-sm font-semibold text-foreground truncate">
+                    {uploadResult.filename}
                   </div>
-                  <div className="text-xs text-amber-700">
-                    {
-formatBytes(uploadResult.size_bytes)
-} · Already recorded
+                  <div className="text-xs text-amber-700 dark:text-amber-400">
+                    {formatBytes(uploadResult.size_bytes)} · Already recorded
                   </div>
                 </div>
               </div>
@@ -461,169 +423,114 @@ formatBytes(uploadResult.size_bytes)
               <div className="pt-4 flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={
-resetState
-}
-                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm transition-colors"
+                  onClick={resetState}
+                  className="flex-1 py-2.5 bg-muted hover:bg-muted/80 text-foreground font-semibold rounded-xl text-sm transition-colors"
                 >
                   Upload a different invoice
                 </button>
                 <button
                   type="button"
-                  onClick={
-handleClose
-}
-                  className="flex-1 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl text-sm transition-colors"
+                  onClick={handleClose}
+                  className="flex-1 py-2.5 bg-foreground text-background dark:bg-card dark:text-foreground hover:opacity-90 font-semibold rounded-xl text-sm transition-colors"
                 >
                   Close
                 </button>
               </div>
             </div>
-          )
-}
+          )}
 
-          {
-/* STATE 3: Select & Upload Form */
-}
-          {
-!uploadResult && (
+          {/* STATE 3: Select & Upload Form */}
+          {!uploadResult && (
             <div className="space-y-5">
-              {
-/* Error Banner */
-}
-              {
-errorMessage && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              {/* Error Banner */}
+              {errorMessage && (
+                <div className="bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
                   <div>
-                    <div className="text-sm font-bold text-red-900">That file can't be uploaded.</div>
-                    <div className="text-xs text-red-700 mt-0.5">{
-errorMessage
-}</div>
+                    <div className="text-sm font-bold text-rose-700 dark:text-rose-400">That file can't be uploaded.</div>
+                    <div className="text-xs text-rose-600 dark:text-rose-300 mt-0.5">{errorMessage}</div>
                   </div>
                 </div>
-              )
-}
+              )}
 
-              {
-/* Upload Dropzone */
-}
-              {
-!selectedFile && (
+              {/* Upload Dropzone */}
+              {!selectedFile && (
                 <div
-                  onDragEnter={
-handleDrag
-}
-                  onDragLeave={
-handleDrag
-}
-                  onDragOver={
-handleDrag
-}
-                  onDrop={
-handleDrop
-}
-                  className={
-`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer ${
-
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer ${
                     dragActive
-                      ? 'border-brand-500 bg-brand-50/50 scale-[0.99]'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/50 bg-gray-50/20'
-                  
-}`
-}
-                  onClick={
-() => fileInputRef.current?.click()
-}
+                      ? 'border-primary bg-primary/10 scale-[0.99]'
+                      : 'border-border hover:border-muted-foreground/30 hover:bg-muted/30 bg-muted/10'
+                  }`}
+                  onClick={() => fileInputRef.current?.click()}
                 >
                   <input
-                    ref={
-fileInputRef
-}
+                    ref={fileInputRef}
                     type="file"
                     className="hidden"
                     accept=".pdf,.png,.jpg,.jpeg"
-                    onChange={
-handleFileChange
-}
+                    onChange={handleFileChange}
                   />
-                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-3">
                     <UploadCloud className="w-6 h-6" />
                   </div>
-                  <div className="text-base font-semibold text-gray-800">
-                    Drag &amp;
- drop your invoice here
+                  <div className="text-base font-semibold text-foreground">
+                    Drag &amp; drop your invoice here
                   </div>
-                  <div className="text-xs text-gray-400 my-1.5 font-medium">or</div>
+                  <div className="text-xs text-muted-foreground my-1.5 font-medium">or</div>
                   <button
                     type="button"
-                    className="px-4 py-1.5 bg-white border border-gray-200 hover:border-gray-300 rounded-xl text-xs font-semibold text-gray-700 shadow-sm transition-colors inline-block"
+                    className="px-4 py-1.5 bg-card border border-border hover:bg-muted rounded-xl text-xs font-semibold text-foreground shadow-xs transition-colors inline-block"
                   >
                     Browse files
                   </button>
-                  <div className="text-xs text-gray-400 mt-4">
+                  <div className="text-xs text-muted-foreground mt-4">
                     PDF, JPG, PNG · Maximum 10 MB
                   </div>
                 </div>
-              )
-}
+              )}
 
-              {
-/* Selected File Details */
-}
-              {
-selectedFile && (
+              {/* Selected File Details */}
+              {selectedFile && (
                 <div className="space-y-4">
-                  <div className="border border-gray-200 rounded-2xl p-4 bg-gray-50/50 flex items-center justify-between gap-3">
+                  <div className="border border-border rounded-2xl p-4 bg-muted/20 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 flex items-center justify-center flex-shrink-0 text-blue-600 shadow-sm">
-                        {
-isPdf ? <FileText className="w-5 h-5" /> : <Image className="w-5 h-5" />
-}
+                      <div className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center flex-shrink-0 text-primary shadow-xs">
+                        {isPdf ? <FileText className="w-5 h-5" /> : <Image className="w-5 h-5" />}
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm font-semibold text-gray-900 truncate">
-                          {
-selectedFile.name
-}
+                        <div className="text-sm font-semibold text-foreground truncate">
+                          {selectedFile.name}
                         </div>
-                        <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-2">
-                          <span>{
-formatBytes(selectedFile.size)
-}</span>
+                        <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                          <span>{formatBytes(selectedFile.size)}</span>
                           <span>·</span>
-                          <span className="uppercase text-[10px] font-bold text-gray-400">
-                            {
-selectedFile.name.split('.').pop()
-}
+                          <span className="uppercase text-[10px] font-bold text-muted-foreground">
+                            {selectedFile.name.split('.').pop()}
                           </span>
                         </div>
                       </div>
                     </div>
-                    {
-!isUploading && (
+                    {!isUploading && (
                       <button
                         type="button"
-                        onClick={
-resetState
-}
-                        className="text-xs font-medium text-gray-400 hover:text-red-600 px-2 py-1 rounded-lg transition-colors"
+                        onClick={resetState}
+                        className="text-xs font-medium text-muted-foreground hover:text-rose-600 px-2 py-1 rounded-lg transition-colors"
                       >
                         Remove
                       </button>
-                    )
-}
+                    )}
                   </div>
 
-                  {
-/* Uploading Status */
-}
-                  {
-isUploading ? (
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-center">
-                      <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                      <div className="text-sm font-semibold text-blue-900">Uploading invoice...</div>
-                      <div className="text-xs text-blue-700 mt-0.5">
+                  {/* Uploading Status */}
+                  {isUploading ? (
+                    <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 text-center">
+                      <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                      <div className="text-sm font-semibold text-primary">Uploading invoice...</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
                         Securing document in storage and checking for duplicates.
                       </div>
                     </div>
@@ -631,32 +538,25 @@ isUploading ? (
                     <div className="flex items-center gap-3 pt-2">
                       <button
                         type="button"
-                        onClick={
-resetState
-}
-                        className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl text-sm transition-colors"
+                        onClick={resetState}
+                        className="flex-1 py-2.5 bg-muted hover:bg-muted/80 text-foreground font-semibold rounded-xl text-sm transition-colors"
                       >
                         Cancel
                       </button>
                       <button
                         type="button"
-                        onClick={
-handleUpload
-}
-                        className="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
+                        onClick={handleUpload}
+                        className="flex-1 py-2.5 bg-primary hover:opacity-90 text-primary-foreground font-semibold rounded-xl text-sm transition-all shadow-xs flex items-center justify-center gap-2"
                       >
                         <UploadCloud className="w-4 h-4" />
                         Upload invoice
                       </button>
                     </div>
-                  )
-}
+                  )}
                 </div>
-              )
-}
+              )}
             </div>
-          )
-}
+          )}
         </div>
       </div>
     </div>
