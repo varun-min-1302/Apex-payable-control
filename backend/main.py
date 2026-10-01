@@ -38,26 +38,63 @@ app = FastAPI(
     openapi_url="/openapi.json"
 )
 
-# Enable CORS for local Vite/React frontend, Vercel deployments, and production origins
-allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "")
-if allowed_origins_raw.strip():
-    allowed_origins = [o.strip() for o in allowed_origins_raw.split(",") if o.strip()]
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=allowed_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-else:
-    # Development & preview deployments: allow localhost and all vercel.app preview URLs
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|.*\.vercel\.app)(:\d+)?",
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# CORS Configuration
+# Production Vercel origin and local development origins are always permitted
+PRODUCTION_ORIGIN = "https://apex-payable-control.vercel.app"
+BASE_ALLOWED_ORIGINS = [
+    PRODUCTION_ORIGIN,
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+]
+
+# Read additional origins from ALLOWED_ORIGINS env var with whitespace & trailing slash sanitization
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins_set = set(BASE_ALLOWED_ORIGINS)
+
+if allowed_origins_env.strip():
+    for origin_item in allowed_origins_env.split(","):
+        cleaned_origin = origin_item.strip().rstrip("/")
+        if cleaned_origin:
+            allowed_origins_set.add(cleaned_origin)
+
+CORS_ALLOWED_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+CORS_ALLOWED_HEADERS = [
+    "Content-Type",
+    "Authorization",
+    "X-Demo-User-Email",
+    "Accept",
+    "Origin",
+    "X-Requested-With",
+    "Access-Control-Request-Method",
+    "Access-Control-Request-Headers",
+]
+
+CORS_EXPOSE_HEADERS = [
+    "X-Process-Time",
+    "Content-Length",
+    "Content-Type",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=sorted(list(allowed_origins_set)),
+    allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|.*\.vercel\.app)(:\d+)?",
+    allow_credentials=True,
+    allow_methods=CORS_ALLOWED_METHODS,
+    allow_headers=CORS_ALLOWED_HEADERS,
+    expose_headers=CORS_EXPOSE_HEADERS,
+    max_age=86400,
+)
 
 
 @app.middleware("http")

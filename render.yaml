@@ -20,4 +20,5 @@ services:
       - key: STORAGE_ROOT_DIR
         value: "/tmp/storage"
       - key: ALLOWED_ORIGINS
-        sync: false
+        value: "https://apex-payable-control.vercel.app,http://localhost:5173"
+
